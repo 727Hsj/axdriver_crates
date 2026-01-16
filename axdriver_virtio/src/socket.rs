@@ -77,7 +77,7 @@ impl<H: Hal, T: Transport> VsockDriverOps for VirtIoSocketDev<H, T> {
             .inner
             .recv(peer_addr, src_port, buf)
             .map_err(as_dev_err);
-        self.inner.update_credit(peer_addr, src_port);
+        // self.inner.update_credit(peer_addr, src_port);
         res
     }
 
@@ -137,6 +137,10 @@ fn convert_vsock_event<H: Hal, T: Transport>(
         VsockEventType::Received { length } => {
             // Do not read data here, let the upper layer decide when to read.
             Ok(VsockDriverEvent::Received(cid, length))
+        }
+        VsockEventType::CreditRequest => {
+            log::info!("hsj::you yi ge credit request");
+            Ok(VsockDriverEvent::Unknown)
         }
         VsockEventType::Disconnected { reason: _ } => Ok(VsockDriverEvent::Disconnected(cid)),
         _ => Ok(VsockDriverEvent::Unknown),
